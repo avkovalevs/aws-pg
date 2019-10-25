@@ -1,0 +1,59 @@
+---
+# tasks file for common
+
+- name: update /etc/hosts file
+  blockinfile:
+    dest: /etc/hosts
+    content: "{{ lookup('template', 'hosts.j2') }}"
+    state: present
+  become: yes
+  become_user: root
+  tags: common
+
+- name: Change ssh_config parameter StrictHostKeyChecking to no
+  lineinfile:
+    path: /etc/ssh/ssh_config
+    regexp: '^StrictHostKeyChecking'
+    line: 'StrictHostKeyChecking = no'
+    state: present
+  become: yes
+  become_user: root
+  tags: common
+
+- name: Fix for locales
+  lineinfile:
+    path: /etc/environment
+    line: "export LC_ALL=en_US.UTF-8" 
+    create: yes
+  become: yes
+  become_user: root
+  tags: common
+
+- name: "Add Ubuntu postgres repo"
+  apt_repository:
+    repo: 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main'
+    filename: 'pgdg'
+  become: yes
+  become_user: root
+  tags: common
+
+- name: "Add an Apt signing key"
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+  become: yes
+  become_user: root
+  tags: common
+
+- name: "Install system packages"
+  apt:
+    name: "{{ packages }}"
+    force_apt_get: true
+  vars:
+    packages:
+    - nmap
+    - nmon
+    - strace
+  become: true
+  become_user: root
+  

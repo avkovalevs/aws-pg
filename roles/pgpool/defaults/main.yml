@@ -1,0 +1,3 @@
+---
+# defaults file for pgpool
+pg_ver: 9.6

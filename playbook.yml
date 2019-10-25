@@ -1,0 +1,35 @@
+---
+- name: Tuning HA solutions for PostgreSQL
+  hosts: db
+  gather_facts: true
+  vars_files:
+    - creds.yml
+  tasks:
+    - name: Display hostnames 
+      debug:
+        msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
+
+ #    - name: Set authorized key to Postgres taken from file
+ #      authorized_key:
+ #       user: postgres
+ #       state: present
+ #       key: "{{ lookup('file', '/etc/ansible/id_rsa.pub') }}"    
+ #     become: yes
+ #     become_user: root
+    
+    - import_role:
+       name: common
+      become: yes
+      become_user: root
+
+    - import_role:
+       name: postgres
+      become: yes
+      become_user: postgres
+
+    - import_role:
+       name: pgpool
+      become: yes
+      become_user: postgres
+...
+

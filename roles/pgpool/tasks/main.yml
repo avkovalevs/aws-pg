@@ -1,0 +1,35 @@
+---
+# tasks file for pgpool
+#
+- name: Update apt cache if needed.
+  apt: 
+    update_cache: yes 
+    cache_valid_time: 3600
+    force_apt_get: true
+  become: true
+  become_user: root
+
+- name: "Install pgpool2 packages"
+  apt:
+    name: "{{ packages }}"
+    force_apt_get: true
+  vars:
+    packages:
+    - postgresql-{{ pg_ver }}-pgpool2
+    - pgpool2
+    - python-pip
+    - python-pexpect
+    - python-setuptools 
+  become: true
+  become_user: root
+
+- name: "Restart pgpool2"
+  systemd:
+    name: pgpool2.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: true
+  become_user: root
+...
+
