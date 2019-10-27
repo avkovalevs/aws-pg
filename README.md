@@ -87,6 +87,7 @@ $ ip --brief a s
 lo               UNKNOWN        127.0.0.1/8 ::1/128 
 eth0             UP             172.31.41.51/20 172.31.41.52/20 fe80::88b:c5ff:fe78:f372/64 
 ```
+
 Other steps need to be implemented according to note https://aws.amazon.com/ru/articles/leveraging-multiple-ip-addresses-for-virtual-ip-address-fail-over-in-6-simple-steps/ 
  Also I checked that secondary ip not installed correctly even after the launch wizard instance (create EC2 instance). 
 The cloud init network config file /etc/network/interfaces.d/50-cloud-init.cfg not contain required settings.
