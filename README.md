@@ -16,7 +16,7 @@ A description of the settable variables for this role should go here, including 
 
 Recommendations
 ---------------
-It is required to install Ansible software inside the private network which has the network acceess via ssh to database nodes. 
+It is required to install Ansible software inside the private network which has the network access via ssh to database nodes. 
 ```
 $ sudo apt-add-repository ppa:ansible/ansible
 $ sudo apt install software-properties-common
@@ -40,17 +40,18 @@ The final step is encrypt the file:
 ```
 $ sudo ansible-vault encrypt creds.yml   
 ```
-The secret variables will be decrypted temporary in memory during the playbook run. They are not showed in std output and logs.
+The secret variables will be decrypted temporary in memory during the playbook run. They are not shown in std output and logs.
 
 3. Start to deploy PG infrastructure:
-``
+```
 [ubuntu@ans-host:/etc/ansible]$ ansible-playbook -i hosts playbook.yml --key-file="/home/ubuntu/javakey.pem" -v
 ```
 Before starting you need to change the hosts file and check variables inside the roles:
 ```
-./roles/postgres/defaults/main.yml
-./roles/pgpool/defaults/main.yml
-./roles/common/defaults/main.yml
+./roles/postgres/defaults/main.yml  
+./roles/pgpool/defaults/main.yml  
+./roles/common/defaults/main.yml  
+
 ```
 4. After the deployment check the state of postgres, pgpool and repmgr services on base nodes.
 4.1 Postgresq (OK status)
