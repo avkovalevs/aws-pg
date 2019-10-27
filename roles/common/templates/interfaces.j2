@@ -12,17 +12,18 @@ iface lo inet loopback
 # See LP: #1262951
 auto eth0
 iface eth0 inet static
-address 172.31.41.51
-netmask 255.255.240.0
+address {{ ansible_default_ipv4.address }}
+netmask {{ ansible_default_ipv4.netmask }} 
 
+{%  if  pgsql_cluster_master == 'true' %}
 iface eth0 inet static
-address 172.31.41.52
-netmask 255.255.240.0
+address {{ secondary_ip }}
+netmask {{ ansible_default_ipv4.netmask }}
+{%   endif %}
 
-
-gateway 172.31.32.1
-network 172.31.32.0
-broadcast 172.31.47.255
+gateway {{ ansible_default_ipv4.gateway }}
+network {{ ansible_default_ipv4.network }}
+broadcast {{ ansible_default_ipv4.broadcast }}
 
 #source /etc/network/interfaces.d/*.cfg
 

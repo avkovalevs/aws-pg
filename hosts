@@ -18,7 +18,7 @@
 # Ex 2: A collection of hosts belonging to the 'webservers' group
 
 [db]
-3.248.225.23 pgsql_cluster_master=true master_hostname=ip-172-30-0-235
+3.248.225.23 pgsql_cluster_master=true master_hostname=ip-172-30-0-235 secondary_ip=172.30.0.10
 34.253.228.186
 54.154.185.218
 

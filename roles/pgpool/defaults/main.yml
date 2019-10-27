@@ -1,3 +1,4 @@
 ---
 # defaults file for pgpool
 pg_ver: 9.6
+pgdata: /var/lib/postgresql/9.6/main
