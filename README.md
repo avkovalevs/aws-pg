@@ -17,12 +17,13 @@ A description of the settable variables for this role should go here, including 
 Recommendations
 ---------------
 It is required to install Ansible software inside the private network which has the network acceess via ssh to database nodes. 
+```
 $ sudo apt-add-repository ppa:ansible/ansible
 $ sudo apt install software-properties-common
 $ sudo apt update
 $ sudo apt install ansible
 $ sudo python-psycopg2 
-
+```
 How to use:
 ----------------
 1. Clone playbooks from github repo https://github.com/iddozo/DBCluster.git to /etc/ansible catalog.
@@ -31,36 +32,48 @@ How to use:
 This file is used as the key to decrypt the creds.yml.
 The creds.yml file store the passwords variables which are used inside the playbook.yml.
 To change variables inside the creds.yml file use the following commands:
+```
 $ sudo ansible-vault decrypt creds.yml
+```
 Change the file creds.yml using vi editor. 
 The final step is encrypt the file:
+```
 $ sudo ansible-vault encrypt creds.yml   
+```
 The secret variables will be decrypted temporary in memory during the playbook run. They are not showed in std output and logs.
 
 3. Start to deploy PG infrastructure:
+``
 [ubuntu@ans-host:/etc/ansible]$ ansible-playbook -i hosts playbook.yml --key-file="/home/ubuntu/javakey.pem" -v
-
+```
 Before starting you need to change the hosts file and check variables inside the roles:
+```
 ./roles/postgres/defaults/main.yml
 ./roles/pgpool/defaults/main.yml
 ./roles/common/defaults/main.yml
-
+```
 4. After the deployment check the state of postgres, pgpool and repmgr services on base nodes.
 4.1 Postgresq (OK status)
+```
 ubuntu@ip-172-30-0-235:~$ systemctl status postgresql@9.6-main.service
 ● postgresql@9.6-main.service - PostgreSQL Cluster 9.6-main
    Loaded: loaded (/lib/systemd/system/postgresql@.service; disabled; vendor preset: enabled)
    Active: active (running) since Fri 2019-10-25 16:35:30 UTC; 1 day 22h ago
+```
 4.2 Pgpool (OK status)
+```
 ubuntu@ip-172-30-0-235:~$ systemctl status pgpool2.service 
 ● pgpool2.service - pgpool-II
    Loaded: loaded (/lib/systemd/system/pgpool2.service; enabled; vendor preset: enabled)
    Active: active (running) since Fri 2019-10-25 16:35:38 UTC; 1 day 22h ago
+```
 4.3 Repmgrd (OK status)
+```
 ubuntu@ip-172-30-0-235:~$ systemctl status repmgrd
 ● repmgrd.service - LSB: Start/stop repmgrd
    Loaded: loaded (/etc/init.d/repmgrd; bad; vendor preset: enabled)
    Active: active (running) since Thu 2019-10-24 12:14:59 UTC; 3 days ago
+```
 5. Check the cluster state.
   
 License
