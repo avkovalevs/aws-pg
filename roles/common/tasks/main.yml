@@ -79,5 +79,12 @@
   notify:
     - restart network
 
+- name: "Restart network"
+  systemd:
+    name: networking
+    state: restarted
+  become: true
+  become_user: root
+
 ...
 
