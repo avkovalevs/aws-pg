@@ -14,9 +14,9 @@ Role Variables
 
 A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 
-Recommendations
+Install Ansible software
 ---------------
-It is required to install Ansible software inside the private network which has the network access via ssh to database nodes. 
+It is required to install Ansible software inside the private network which has the network access via ssh to database nodes. This node must have Internet access. 
 ```
 $ sudo apt-add-repository ppa:ansible/ansible
 $ sudo apt install software-properties-common
@@ -43,6 +43,7 @@ $ sudo ansible-vault encrypt creds.yml
 The secret variables will be decrypted temporary in memory during the playbook run. They are not shown in std output and logs.
 
 3. Start to deploy PG infrastructure:
+If Ansible host and database hosts are accesible to both end via common private network then need to change 'hosts' file on privatedatabase addresses. In case of database hosts and ansible host has passwordless access between Ubuntu users then option --key-fileno need to be specified. 
 ```
 [ubuntu@ans-host:/etc/ansible]$ ansible-playbook -i hosts playbook.yml --key-file="/home/ubuntu/javakey.pem" -v
 ```
