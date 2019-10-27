@@ -78,7 +78,7 @@ ubuntu@ip-172-30-0-235:~$ systemctl status repmgrd
 5. Check the cluster state.
 
 6. AWS network tuning    
-AWS steps to use floating IP. The floating IP configuration need to use in Pgpool cluster.  
+6.1 AWS steps to use floating IP. The floating IP configuration need to use in Pgpool cluster.  
 Currently, AWS does not fully support floating IP for Ubuntu 16.04 LTS. This means, that setting a static primary and secondary ip  via Actins->Networking->Manage IP Addresses not working dynamically and even after the shutdown/startup. For correct network settings change on master database node network config files '/etc/network/interfaces' and 99-disable-network-config.cfg as shown in example at github. The first file will add primary and secondary ip addresses. The second file will disable cloud network configuration and use standard Ubuntu network configuration. To apply network changes need to run following command:
 ```
 $ sudo systemctl restart networking
@@ -87,9 +87,8 @@ $ ip --brief a s
 lo               UNKNOWN        127.0.0.1/8 ::1/128 
 eth0             UP             172.31.41.51/20 172.31.41.52/20 fe80::88b:c5ff:fe78:f372/64 
 ```
-
-Other steps need to be implemented according to note https://aws.amazon.com/ru/articles/leveraging-multiple-ip-addresses-for-virtual-ip-address-fail-over-in-6-simple-steps/ 
- Also I checked that secondary ip not installed correctly even after the launch wizard instance (create EC2 instance). 
+6.2 Other steps need to be implemented according to note https://aws.amazon.com/ru/articles/leveraging-multiple-ip-addresses-for-virtual-ip-address-fail-over-in-6-simple-steps/ 
+Also I checked that secondary ip not installed correctly even after the launch wizard instance (create EC2 instance). 
 The cloud init network config file /etc/network/interfaces.d/50-cloud-init.cfg not contain required settings.
 If I changed setting manually they are changed after reboot to initial values. 
 License
