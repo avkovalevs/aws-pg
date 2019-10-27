@@ -14,39 +14,55 @@ Role Variables
 
 A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Recommendations
+---------------
+It is required to install Ansible software inside the private network which has the network acceess via ssh to database nodes. 
+$ sudo apt-add-repository ppa:ansible/ansible
+$ sudo apt install software-properties-common
+$ sudo apt update
+$ sudo apt install ansible
+$ sudo python-psycopg2 
 
 How to use:
 ----------------
 1. Clone playbooks from github repo https://github.com/iddozo/DBCluster.git to /etc/ansible catalog.
-The final content must be looking like this:
-ubuntu@dbsrv2:/etc/ansible$ ls -la
-total 52
-drwxr-xr-x  4 root root  4096 Oct 25 17:55 .
-drwxr-xr-x 99 root root  4096 Oct 25 13:37 ..
-drwxr-xr-x  8 root root  4096 Oct 25 17:02 .git
--rw-r--r--  1 root root  1579 Oct 25 17:54 README.md
--rw-r--r--  1 root root 20039 Oct 24 21:00 ansible.cfg
--rw-r--r--  1 root root   679 Oct 24 20:53 creds.yml
--rw-r--r--  1 root root   963 Oct 23 18:25 hosts
--rw-r--r--  1 root root   766 Oct 25 14:09 playbook.yml
-drwxr-xr-x  5 root root  4096 Oct 18 21:05 roles
 
-2. Add Ansible-vault file .vault_pass.txt to ubuntu user's $HOME catalog (get it from #avkovalevs)
-This file used as key for decrypt the creds.yml.
-The creds.yml file store the passwords variables used inside the playbooks.
+2. Add the Ansible-vault file .vault_pass.txt to ubuntu user's $HOME catalog (get it from #avkovalevs)
+This file is used as the key to decrypt the creds.yml.
+The creds.yml file store the passwords variables which are used inside the playbook.yml.
+To change variables inside the creds.yml file use the following commands:
+$ sudo ansible-vault decrypt creds.yml
+Change the file creds.yml using vi editor. 
+The final step is encrypt the file:
+$ sudo ansible-vault encrypt creds.yml   
+The secret variables will be decrypted temporary in memory during the playbook run. They are not showed in std output and logs.
 
 3. Start to deploy PG infrastructure:
 [ubuntu@ans-host:/etc/ansible]$ ansible-playbook -i hosts playbook.yml --key-file="/home/ubuntu/javakey.pem" -v
 
-Before starting need to change the hosts file and check variables inside the roles:
+Before starting you need to change the hosts file and check variables inside the roles:
 ./roles/postgres/defaults/main.yml
 ./roles/pgpool/defaults/main.yml
 ./roles/common/defaults/main.yml
 
+4. After the deployment check the state of postgres, pgpool and repmgr services on base nodes.
+4.1 Postgresq (OK status)
+ubuntu@ip-172-30-0-235:~$ systemctl status postgresql@9.6-main.service
+● postgresql@9.6-main.service - PostgreSQL Cluster 9.6-main
+   Loaded: loaded (/lib/systemd/system/postgresql@.service; disabled; vendor preset: enabled)
+   Active: active (running) since Fri 2019-10-25 16:35:30 UTC; 1 day 22h ago
+4.2 Pgpool (OK status)
+ubuntu@ip-172-30-0-235:~$ systemctl status pgpool2.service 
+● pgpool2.service - pgpool-II
+   Loaded: loaded (/lib/systemd/system/pgpool2.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2019-10-25 16:35:38 UTC; 1 day 22h ago
+4.3 Repmgrd (OK status)
+ubuntu@ip-172-30-0-235:~$ systemctl status repmgrd
+● repmgrd.service - LSB: Start/stop repmgrd
+   Loaded: loaded (/etc/init.d/repmgrd; bad; vendor preset: enabled)
+   Active: active (running) since Thu 2019-10-24 12:14:59 UTC; 3 days ago
+5. Check the cluster state.
+  
 License
 -------
 

@@ -54,6 +54,7 @@
     - nmap
     - nmon
     - strace
+    - ca-certificates
   become: true
   become_user: root
   
