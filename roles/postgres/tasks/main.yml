@@ -40,7 +40,7 @@
   become_user: root
   run_once: true
   
-- name: Change group and permissions for id_rsa
+- name: "Change group and permissions for id_rsa"
   file:
     path: "{{role_path}}/files/postgres_user_id_rsa" 
     owner: ubuntu 
@@ -49,7 +49,7 @@
   become_user: root
   delegate_to: localhost
 
-- name: Change group and permissions for id_rsa.pub
+- name: "Change group and permissions for id_rsa.pub"
   file:
     path: "{{role_path}}/files/postgres_user_id_rsa.pub" 
     owner: ubuntu 
@@ -60,42 +60,46 @@
 
 - name: "Make sure SSH directory for Postgres user exists"
   file:
-   path: "{{ pghome }}/.ssh"
-   state: directory
-   mode: 0700
-   owner: "{{ pguser }}"
-   group: "{{ pggroup }}"
+    path: "{{ pghome }}/.ssh"
+    state: directory
+    mode: 0700
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  become: true
+  become_user: root
 
 - name: "Copy private SSH key for Postgres user"
   copy:
-   src: postgres_user_id_rsa
-   dest: "{{ pghome }}/.ssh/id_rsa"
-   mode: 0600
-   owner: "{{ pguser }}"
-   group: "{{ pggroup }}"
+    src: postgres_user_id_rsa
+    dest: "{{ pghome }}/.ssh/id_rsa"
+    mode: 0600
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
   become: true
   become_user: root
   become_method: sudo
 
 - name: "Copy public SSH key for Postgres user"
   copy:
-   src: postgres_user_id_rsa.pub
-   dest: "{{ pghome }}/.ssh/id_rsa.pub"
-   mode: 0644
-   owner: "{{ pguser }}"
-   group: "{{ pggroup }}"
+    src: postgres_user_id_rsa.pub
+    dest: "{{ pghome }}/.ssh/id_rsa.pub"
+    mode: 0644
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
   become: true
   become_user: root 
 
 - name: "Cross authorize this key among all Postgres servers"
   lineinfile:
-   path: "{{ pghome }}/.ssh/authorized_keys"
-   create: yes
-   mode: 0600
-   owner: "{{ pguser }}"
-   group: "{{ pggroup }}"
-   line: "{{ lookup('file', 'postgres_user_id_rsa.pub') }}"
-   state: present
+    path: "{{ pghome }}/.ssh/authorized_keys"
+    create: yes
+    mode: 0600
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+    line: "{{ lookup('file', 'postgres_user_id_rsa.pub') }}"
+    state: present
+  become: true
+  become_user: root 
 
 - name: "Install repmgr & python packages for asnible modules"   
   apt:
@@ -258,6 +262,8 @@
       stat:
         path: "{{ pgdata }}/PG_VERSION"
       register: pgdata_dir_version
+      become: yes
+      become_user: "{{ pguser }}" 
 
     - name: "Postgres initialize database"
       shell: "{{ pgbin }}/initdb -D {{ pgdata }}"

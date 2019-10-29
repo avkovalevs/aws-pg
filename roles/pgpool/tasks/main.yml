@@ -52,7 +52,7 @@
 - name: "Create link ec2-assign-private-ip-addresses"
   file:
     src: /usr/bin/ec2-assign-private-ip-addresses
-    dest: /opt/aws/bin/ec2-assign-private-ip-address
+    dest: /opt/aws/bin/ec2-assign-private-ip-addresses
     state: link
   become: true
   become_user: root
