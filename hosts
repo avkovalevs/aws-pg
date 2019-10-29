@@ -22,7 +22,7 @@
 34.253.228.186
 54.154.185.218
 
-[pgpoolnodes]
+[pgpnodes]
 ip-172-30-0-235
 ip-172-30-0-12
 # Ex 3: A collection of database servers in the 'dbservers' group

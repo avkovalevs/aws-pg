@@ -1,7 +1,63 @@
 ---
 # tasks file for pgpool
 #
-- name: Update apt cache if needed.
+- name: "Copy aws-apitools-common to /root folder"
+  copy:
+    src: "{{ role_path }}/files/aws-apitools-common.sh"
+    dest: "/root/aws-apitools-common.sh"
+    force: yes
+    mode: 0755
+  become: true
+  become_user: root
+
+- name: "Copy vip_monitor.sh to /root folder"
+  copy:
+    src: "{{ role_path }}/files/vip_monitor.sh"
+    dest: "/root/vip_monitor.sh"
+    force: yes
+    mode: 0755
+  become: true
+  become_user: root
+
+- name: "Create /opt/aws/bin catalog"  
+  file:
+    path: /opt/aws/bin
+    state: directory
+    mode: 0750
+  become: true
+  become_user: root
+
+- name: "Modify vip_monitor.sh" 
+  lineinfile:
+    dest: "/root/vip_monitor.sh"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+    state: present
+  with_items:
+    - { regexp: '^HA_Node_IP=', line: 'HA_Node_IP={{ ansible_default_ipv4.address }}' }
+    - { regexp: '^VIP=', line: "VIP={{ vip_address }}" }
+    - { regexp: '^REGION=', line: "REGION={{ aws_region }}" }
+  become: true
+  become_user: root
+
+- name: "Create link ec2-describe-instances"
+  file:
+    src: /usr/bin/ec2-describe-instances
+    dest: /opt/aws/bin/ec2-describe-instances
+    state: link
+  become: true
+  become_user: root
+
+- name: "Create link ec2-assign-private-ip-addresses"
+  file:
+    src: /usr/bin/ec2-assign-private-ip-addresses
+    dest: /opt/aws/bin/ec2-assign-private-ip-address
+    state: link
+  become: true
+  become_user: root
+
+- name: "Update apt cache if needed"
   apt: 
     update_cache: yes 
     cache_valid_time: 3600

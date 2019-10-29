@@ -2,3 +2,5 @@
 # defaults file for pgpool
 pg_ver: 9.6
 pgdata: /var/lib/postgresql/9.6/main
+aws_region: us-west-1
+vip_address: 172.30.0.10

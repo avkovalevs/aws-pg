@@ -52,9 +52,12 @@
   vars:
     packages:
     - nmap
+    - curl
+    - wget
     - nmon
     - strace
     - ca-certificates
+    - ec2-api-tools
   become: true
   become_user: root
 
