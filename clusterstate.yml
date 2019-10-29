@@ -1,0 +1,19 @@
+---
+- name: "Stop PostgreSQL instances"
+  hosts: db
+  gather_facts: true
+  vars_files:
+    - creds.yml
+  tasks:
+    - name: "Display PostgreSQL nodes" 
+      debug:
+        msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
+   
+    - name: "Show cluster state"
+      command: "/usr/bin/repmgr -f /etc/repmgr.conf cluster crosscheck"
+      args:
+        chdir: /var/lib/postgresql/9.6/main
+      become: true
+      become_user: postgres
+...
+

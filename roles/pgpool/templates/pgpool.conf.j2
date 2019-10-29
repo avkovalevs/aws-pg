@@ -10,14 +10,22 @@ pcp_port = 9898
 pcp_socket_dir = '/tmp'
 
 # - Backend Connection Settings -
-
-{% for host in play_hosts %}
-backend_hostname{{ loop.index0 }} = '{{ ansible_hostname }}'
+{% for host in groups['db'] %}
+backend_hostname{{ loop.index0 }} = {{ ansible_hostname }}
 backend_port{{ loop.index0 }} = 5432
 backend_weight{{ loop.index0 }} = 1
-backend_data_directory{{ loop.index0 }} = '{{ pgdata }}' 
 backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
+backend_data_directory{{ loop.index0 }} = '{{ pgdata }}'
+
 {% endfor %}
+
+#{% for host in play_hosts %}
+#backend_hostname{{ loop.index0 }} = '{{ ansible_hostname }}'
+#backend_port{{ loop.index0 }} = 5432
+#backend_weight{{ loop.index0 }} = 1
+#backend_data_directory{{ loop.index0 }} = '{{ pgdata }}' 
+#backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
+#{% endfor %}
 
 # - Authentication -
 
@@ -38,7 +46,7 @@ ssl = off
 
 # - Pool size -
 
-num_init_children = 25
+num_init_children = 32
 max_pool = 4
 
 # - Life time -
@@ -60,7 +68,7 @@ log_destination = 'syslog'
 
 print_timestamp = on
 log_connections = on
-log_hostname = off
+log_hostname = on
 log_statement = off
 log_per_node_statement = off
 log_standby_delay = 'if_over_threshold'
@@ -78,8 +86,8 @@ debug_level = 0
 # FILE LOCATIONS
 #------------------------------------------------------------------------------
 
-pid_file_name = '/var/run/pgpool-II-96/pgpool.pid'
-logdir = '/tmp'
+pid_file_name = '/var/run/postgresql/pgpool.pid'
+logdir = '/var/log/postgresql'
 
 
 #------------------------------------------------------------------------------
@@ -122,10 +130,10 @@ master_slave_sub_mode = 'stream'
 
 # - Streaming -
 
-sr_check_period = 60
-sr_check_user = 'pgpooler'
-sr_check_password = 'poolpass'
-delay_threshold = 30
+sr_check_period = 30
+sr_check_user = 'repmgr'
+sr_check_password = '{{ repmgrpass }}'
+delay_threshold = 10
 
 # - Special commands -
 
