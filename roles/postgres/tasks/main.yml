@@ -102,7 +102,7 @@
   become: true
   become_user: root 
 
-- name: "Install repmgr & python packages for asnible modules"   
+- name: "Install postgres, repmgr & python packages for ansible modules"   
   apt:
     name: "{{ repmgr_packages }}"
     force_apt_get: true
@@ -244,7 +244,7 @@
   become: true
   become_user: root
 
-- name: "Activate repmgrd daemon via init scripts "
+- name: "Activate repmgrd daemon via init scripts"
   lineinfile:
     dest: "/etc/default/repmgrd"
     regexp: "{{ item.regexp }}"
@@ -259,14 +259,15 @@
   become_user: root
 
 - block:
-    - name: Check if PostgreSQL database is initialized.
+# Actions inside this block will apply on master node only. If the master db during testing or failure moved to anothe node don't apply playbook.yml. Before applying this playbook you need to come back roles of the nodes to initial state.   
+    - name: "Check if PostgreSQL database cluster is initialized"
       stat:
         path: "{{ pgdata }}/PG_VERSION"
       register: pgdata_dir_version
       become: yes
       become_user: "{{ pguser }}" 
 
-    - name: "Postgres initialize database"
+    - name: " IF not, Postgres will initialize the database cluster on master node"
       shell: "{{ pgbin }}/initdb -D {{ pgdata }}"
       become: yes
       become_user: "{{ pguser }}" 
@@ -332,7 +333,7 @@
       args:
         executable: /bin/bash
 
-    - name: "Registration the master node in repmgr"
+    - name: "Registration the master node in repmgr cluster"
       command: "/usr/bin/repmgr -f /etc/repmgr.conf master register"
       args:
         chdir: "{{ pgdata }}"

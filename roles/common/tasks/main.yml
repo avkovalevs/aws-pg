@@ -82,12 +82,11 @@
   notify:
     - restart network
 
-- name: "Restart network"
+- name: "Restart the network if handler will not restart"
   systemd:
     name: networking
     state: restarted
   become: true
   become_user: root
-
 ...
 
