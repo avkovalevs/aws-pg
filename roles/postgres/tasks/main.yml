@@ -12,7 +12,6 @@
   set_fact: 
     pgsql_cluster_configured: "{{ ansible_local.pgsql.pgsql.cluster_configured }}"
   when:
-    - ansible_local is defined
     - ansible_local.pgsql is defined 
     - ansible_local.pgsql.pgsql is defined 
     - ansible_local.pgsql.pgsql.cluster_configured is defined
@@ -237,7 +236,7 @@
     backrefs: yes
     state: present
   with_items:
-    - { regexp: '^node_name=', line: 'node_name={{ ansible_hostname }}' }
+    - { regexp: '^node_name=', line: "node_name='{{ ansible_hostname }}'" }
     - { regexp: '^node_id=', line: "node_id={{groups['db'].index(inventory_hostname)+1 }}" }
     - { regexp: '^priority=', line: "priority={{ 100-groups['db'].index(inventory_hostname) }}" }
     - { regexp: '(.*)host.*=.*(user=.*)', line: '\1host={{ ansible_hostname }} \2' }
@@ -334,7 +333,7 @@
         executable: /bin/bash
 
     - name: "Registration the master node in repmgr cluster"
-      command: "/usr/bin/repmgr -f /etc/repmgr.conf master register"
+      command: "/usr/bin/repmgr -f /etc/repmgr.conf master register --force"
       args:
         chdir: "{{ pgdata }}"
       register: register_result
@@ -366,7 +365,7 @@
       register: data_dir_files
       changed_when: false
       become: true
-
+    
     - name: "Clone master databases to replicas"
       command: >
         /usr/bin/repmgr --cluster 9.6/main -f /etc/repmgr.conf
@@ -380,6 +379,16 @@
       become_user: "{{ pguser }}" 
       when:
         - data_dir_files.matched|int == 0
+    
+    - name: "Check on recently cloned instance without running wal reciever processes"
+      shell: "ps -ef | grep reciever"
+      register: reciever_result
+      become: true
+      become_user: "{{ pguser }}"
+
+    - name: "Debug reciever_register"
+      debug:
+        var: reciever_result
 
     - name: "Restart service postgres on replicas"
       systemd:
@@ -398,6 +407,7 @@
       become_user: "{{ pguser }}"
       when:
         - not pgsql_cluster_configured
+        - reciever_result.stdout_lines < 2
       ignore_errors: true
 
     - name: "Debug standby register"
@@ -430,18 +440,34 @@
   become: true
   become_user: root
 
+- name: "Make sure /var/log/repmgr directory for Postgres user exists"
+  file:
+    path: "/var/log/repmgr"
+    state: directory
+    mode: 0755
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  become: true
+  become_user: root
+
 - name: "Force systemd to reread configs after repmgrd change /etc/default/repmgrd" 
   systemd:
     daemon_reload: yes
   become: true
   become_user: root
 
-- name: "Enable and start service repmgrd"
+- name: "Enable and stop service repmgrd"
+  systemd:
+    name: repmgrd.service
+    state: stopped
+    enabled: yes
+  become: true
+  become_user: root
+
+- name: "Start service repmgrd"
   systemd:
     name: repmgrd.service
     state: started
-    enabled: yes
-    no_block: yes
   become: true
   become_user: root
 
@@ -459,6 +485,5 @@
 - name: "Reload ansible_local"
   setup:
     filter: ansible_local
-  
 ...
 
