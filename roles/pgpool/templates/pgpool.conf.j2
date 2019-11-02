@@ -11,7 +11,7 @@ pcp_socket_dir = '/tmp'
 
 # - Backend Connection Settings -
 {% for host in groups['db'] %}
-backend_hostname{{ loop.index0 }} = {{ ansible_hostname }}
+backend_hostname{{ loop.index0 }} = {{ host }}
 backend_port{{ loop.index0 }} = 5432
 backend_weight{{ loop.index0 }} = 1
 backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
@@ -161,8 +161,8 @@ pgpool2_hostname = ''
 
 health_check_period = 10
 health_check_timeout = 5
-health_check_user = 'pgpooler'
-health_check_password = 'poolpass'
+health_check_user = '{{ pgpuser }}'
+health_check_password = '{{ pgpoolerpass }}'
 health_check_max_retries = 10
 health_check_retry_delay = 2
 
@@ -170,7 +170,7 @@ health_check_retry_delay = 2
 # FAILOVER AND FAILBACK
 #------------------------------------------------------------------------------
 
-failover_command = '/usr/local/libexec/pgpool/failover.sh %d %P %H %R'
+failover_command = '/etc/pgpool/failover.sh %d %H'
 failback_command = ''
 fail_over_on_backend_error = on
 search_primary_node_timeout = 10
@@ -179,8 +179,8 @@ search_primary_node_timeout = 10
 # ONLINE RECOVERY
 #------------------------------------------------------------------------------
 
-recovery_user = 'pgpool'
-recovery_password = 'poolpass'
+recovery_user = '{{ pgpuser }}'
+recovery_password = '{{ pgpoolerpass }}'
 recovery_1st_stage_command = 'recovery.sh'
 recovery_2nd_stage_command = ''
 recovery_timeout = 30

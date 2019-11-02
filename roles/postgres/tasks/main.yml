@@ -124,7 +124,7 @@
     group: "{{ pggroup }}"
     mode: 0400
     block: |
-      export PATH=$PATH:/usr/lib/postgresql/9.6/bin
+      export PATH=$PATH:/usr/sbin:/usr/lib/postgresql/9.6/bin
       export PGDATA=/var/lib/postgresql/9.6/main
       export PGPORT=5432
       export PGCLUSTER=9.6/main
@@ -249,11 +249,12 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     backrefs: yes
+    backup: yes
     state: present
   with_items:
     - { regexp: '^REPMGRD_ENABLED=', line: 'REPMGRD_ENABLED=yes' }
     - { regexp: '^#REPMGRD_CONF=', line: 'REPMGRD_CONF="/etc/repmgr.conf"' }
-    - { regexp: '^#REPMGRD_OPTS=', line: 'REPMGRD_OPTS="--daemonize=false"' }
+    - { regexp: '^#REPMGRD_OPTS=', line: 'REPMGRD_OPTS="--monitoring-history --verbose"' }
   become: true
   become_user: root
 
@@ -444,7 +445,17 @@
   file:
     path: "/var/log/repmgr"
     state: directory
-    mode: 0755
+    mode: 0775
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  become: true
+  become_user: root
+
+- name: "Make sure /var/log/postgresql directory exist and has owners"
+  file:
+    path: "/var/log/postgresql"
+    state: directory
+    mode: 0775
     owner: "{{ pguser }}"
     group: "{{ pggroup }}"
   become: true

@@ -79,6 +79,105 @@
   become: true
   become_user: root
 
+- name: "Disable the rot pool nodes status file"
+  lineinfile:
+    path: /lib/systemd/system/pgpool2.service
+    regexp: '^ExecStart='
+    line: ExecStart=/usr/sbin/pgpool -D -n -f /etc/pgpool2/pgpool.conf  
+  become: true
+  become_user: root
+
+- name: "Suppress failed to bind a socket error by force delete socket file"
+  lineinfile:
+    path: /lib/systemd/system/pgpool2.service
+    insertafter: '^ExecStart='
+    line: ExecStop=/usr/sbin/pgpool -f /etc/pgpool2/pgpool.conf -m fast stop
+  become: true
+  become_user: root
+
+- name: "Reload systemctl daemon"
+  systemd:
+    daemon_reload: yes
+  become: true
+  become_user: root
+
+- name: "Copy template files to /etc/pgpool2"
+  template:
+    src: "{{ item }}"
+    dest: "/etc/pgpool2/{{ item }}"
+    owner: "{{ pguser  }}"
+    group: "{{ pggroup }}"
+    mode: u=rwx,g=rx,o=rx
+  with_items:
+    - pgpool.conf.j2    
+  become: true
+  become_user: root
+
+- name: "Copy file to /etc/pgpool2/pool_hba.conf"
+  copy:
+    src: pool_hba.conf
+    dest: "/etc/pgpool2/pool_hba.conf"
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  become: true
+  become_user: root
+
+- name: "Check pcp.conf existence"
+  stat:
+    path: /etc/pgpool2/pcp.conf
+  register: pcp_conf_exists
+  become: true
+  become_user: root
+
+- name: "Create file pcp.conf if not exist"
+  file:
+    path: /etc/pgpool2/pcp.conf
+    state: touch
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  when: not pcp_conf_exists.stat.exists
+  become: true
+  become_user: root
+
+- name: "Generate md5 pass for pgpooler"
+  command: "pg_md5 {{ pgpoolerpass }}"
+  register: pgpuser_md5_password
+  become: true
+  become_user: "{{ pguser }}" 
+
+- name: "Add a line in pcp.conf"
+  lineinfile:
+    path: /etc/pgpool2/pcp.conf
+    line: "{{ pgpuser }}:{{ pgpuser_md5_password.stdout }}"
+  become: true
+  become_user: root
+
+- name: "Check pool_passwd existence"
+  stat:
+    path: /etc/pgpool2/pool_passwd
+  register: pool_passwd_conf_exists
+  become: true
+  become_user: root
+
+- name: "Create file pool_passwd if not exist"
+  file:
+    path: /etc/pgpool2/pool_passwd
+    state: touch
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  become: true
+  become_user: root
+  when: not pool_passwd_conf_exists.stat.exists
+
+- name: "Add pool passwd for pgpool user"
+  expect:
+    command: "pg_md5 -m -f /etc/pgpool2/pgpool.conf -u {{ pgpuser }} -p"
+    responses:
+      password: "{{ pgpoolerpass }}"
+    echo: yes
+  become: true
+  become_user: root
+
 - name: "Restart pgpool2"
   systemd:
     name: pgpool2.service
