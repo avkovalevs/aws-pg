@@ -12,7 +12,7 @@ REGION=
 
 # Run aws-apitools-common.sh to set up default environment variables and to
 # leverage AWS security credentials provided by EC2 roles
-. /etc/profile.d/aws-apitools-common.sh
+. ./aws-apitools-common.sh
 
 # Determine the instance and ENI IDs so we can reassign the VIP to the
 # correct ENI.  Requires EC2 describe-instances and assign-private-ip-address

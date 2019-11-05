@@ -31,6 +31,21 @@
     - hostvars[item].pgsql_cluster_master is defined
     - hostvars[item].pgsql_cluster_master
 
+- name: "Install postgres, repmgr & python packages for ansible modules"
+  apt:
+    name: "{{ repmgr_packages }}"
+    force_apt_get: true
+  vars:
+    repmgr_packages:
+    - postgresql-9.6
+    - postgresql-client-9.6
+    - postgresql-contrib-9.6
+    - postgresql-9.6-repmgr
+    - libevent-dev
+    - python-psycopg2
+  become: true
+  become_user: root
+     
 - name: "Create SSH keys for the Postgres user and put it into this role's files directory"
   shell: ssh-keygen -f "{{role_path}}/files/postgres_user_id_rsa" -t rsa -N ''
   args:
@@ -98,21 +113,6 @@
     group: "{{ pggroup }}"
     line: "{{ lookup('file', 'postgres_user_id_rsa.pub') }}"
     state: present
-  become: true
-  become_user: root 
-
-- name: "Install postgres, repmgr & python packages for ansible modules"   
-  apt:
-    name: "{{ repmgr_packages }}"
-    force_apt_get: true
-  vars:
-    repmgr_packages:
-    - postgresql-9.6
-    - postgresql-client-9.6
-    - postgresql-contrib-9.6
-    - postgresql-9.6-repmgr
-    - libevent-dev
-    - python-psycopg2
   become: true
   become_user: root 
 
@@ -367,6 +367,16 @@
       changed_when: false
       become: true
     
+    - name: "Check on recently cloned instance without running wal reciever processes"
+      shell: "ps -ef | grep reciever"
+      register: reciever_result
+      become: true
+      become_user: "{{ pguser }}"
+
+    - name: "Debug reciever_register"
+      debug:
+        var: reciever_result
+
     - name: "Clone master databases to replicas"
       command: >
         /usr/bin/repmgr --cluster 9.6/main -f /etc/repmgr.conf
@@ -380,17 +390,8 @@
       become_user: "{{ pguser }}" 
       when:
         - data_dir_files.matched|int == 0
+        - reciever_result.stdout_lines < 2
     
-    - name: "Check on recently cloned instance without running wal reciever processes"
-      shell: "ps -ef | grep reciever"
-      register: reciever_result
-      become: true
-      become_user: "{{ pguser }}"
-
-    - name: "Debug reciever_register"
-      debug:
-        var: reciever_result
-
     - name: "Restart service postgres on replicas"
       systemd:
         state: restarted

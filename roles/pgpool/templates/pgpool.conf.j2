@@ -19,14 +19,6 @@ backend_data_directory{{ loop.index0 }} = '{{ pgdata }}'
 
 {% endfor %}
 
-#{% for host in play_hosts %}
-#backend_hostname{{ loop.index0 }} = '{{ ansible_hostname }}'
-#backend_port{{ loop.index0 }} = 5432
-#backend_weight{{ loop.index0 }} = 1
-#backend_data_directory{{ loop.index0 }} = '{{ pgdata }}' 
-#backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
-#{% endfor %}
-
 # - Authentication -
 
 enable_pool_hba = on
@@ -89,14 +81,12 @@ debug_level = 0
 pid_file_name = '/var/run/postgresql/pgpool.pid'
 logdir = '/var/log/postgresql'
 
-
 #------------------------------------------------------------------------------
 # CONNECTION POOLING
 #------------------------------------------------------------------------------
 
 connection_cache = on
 reset_query_list = 'ABORT; DISCARD ALL'
-
 
 #------------------------------------------------------------------------------
 # REPLICATION MODE
@@ -181,7 +171,7 @@ search_primary_node_timeout = 10
 
 recovery_user = '{{ pgpuser }}'
 recovery_password = '{{ pgpoolerpass }}'
-recovery_1st_stage_command = 'recovery.sh'
+recovery_1st_stage_command = ''
 recovery_2nd_stage_command = ''
 recovery_timeout = 30
 client_idle_limit_in_recovery = 0
