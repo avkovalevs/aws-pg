@@ -1,7 +1,7 @@
 ---
 # tasks file for common
 
-- name: update /etc/hosts file
+- name: "Update /etc/hosts file"
   blockinfile:
     dest: /etc/hosts
     content: "{{ lookup('template', 'hosts.j2') }}"
@@ -61,32 +61,32 @@
   become: true
   become_user: root
 
-- name: "Disable AWS Cloud network settings"
-  copy: 
-    src: "{{ role_path }}/files/99-disable-network-config.cfg"
-    dest: "/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
-    force: no
-    mode: 0644
-  become: true
-  become_user: root
+  #- name: "Disable AWS Cloud network settings"
+  #copy: 
+  #  src: "{{ role_path }}/files/99-disable-network-config.cfg"
+  #  dest: "/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
+  #  force: no
+  #  mode: 0644
+  #become: true
+  #become_user: root
 
   
-- name: "Change AWS Cloud network settings"
-  template: 
-    src: interfaces.j2 
-    dest: "/etc/network/interfaces"
-    force: yes
-    mode: 0644
-  become: true
-  become_user: root
-  notify:
-    - restart network
+  #- name: "Change AWS Cloud network settings"
+  #template: 
+  #  src: interfaces.j2 
+  #  dest: "/etc/network/interfaces"
+  #  force: yes
+  #  mode: 0644
+  #become: true
+  #become_user: root
+  #notify:
+  #  - restart network
 
-- name: "Restart the network if handler will not restart"
-  systemd:
-    name: networking
-    state: restarted
-  become: true
-  become_user: root
+  #- name: "Restart the network if handler will not restart"
+  #systemd:
+  #  name: networking
+  #  state: restarted
+  #become: true
+  #become_user: root
 ...
 

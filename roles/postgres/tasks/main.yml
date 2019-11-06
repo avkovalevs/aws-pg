@@ -34,6 +34,7 @@
 - name: "Install postgres, repmgr & python packages for ansible modules"
   apt:
     name: "{{ repmgr_packages }}"
+    allow_unauthenticated: true
     force_apt_get: true
   vars:
     repmgr_packages:
@@ -368,14 +369,28 @@
       become: true
     
     - name: "Check on recently cloned instance without running wal reciever processes"
-      shell: "ps -ef | grep reciever"
-      register: reciever_result
+      shell: "ps -ef | grep receiver"
+      register: receiver_result
       become: true
       become_user: "{{ pguser }}"
 
-    - name: "Debug reciever_register"
+    - name: "Debug receiver_register"
       debug:
-        var: reciever_result
+        var: receiver_result.stdout_lines|length
+
+    - name: "Debug data_dir_files"
+      debug:
+        var: data_dir_files.matched|int
+
+    - name: "Stop PG replica before cloning if replica exist (old or failed)"
+      systemd:
+        name: "postgresql"
+        state: stopped
+        daemon_reload: yes
+        name: postgresql@9.6-main.service
+      become: true
+      become_user: root
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
 
     - name: "Clone master databases to replicas"
       command: >
@@ -383,14 +398,12 @@
         -h {{ master_hostname }} -p 5432
         -U repmgr -d repmgr -D {{ pgdata }}
         --copy-external-config-files=samepath --verbose
-        standby clone
+        standby clone --force
       args:
         chdir: "{{ pgdata }}"
       become: true
       become_user: "{{ pguser }}" 
-      when:
-        - data_dir_files.matched|int == 0
-        - reciever_result.stdout_lines < 2
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
     
     - name: "Restart service postgres on replicas"
       systemd:
@@ -407,9 +420,7 @@
       register: register_result
       become: true
       become_user: "{{ pguser }}"
-      when:
-        - not pgsql_cluster_configured
-        - reciever_result.stdout_lines < 2
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
       ignore_errors: true
 
     - name: "Debug standby register"
