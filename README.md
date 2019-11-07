@@ -1,17 +1,17 @@
 PG Cluster tuning playbook
 =========
 
-The goal is to create a PostgreSQL cluster with Fault-tolerant, Load Balancing inside of AWS Auto Scaling Group using Spot EC2 instances. 
-The main idea is to use AWS Spot instances for base nodes and additional slave instances. In the case of increased workload, Auto Scaling group must add more slave nodes. The cluster consists of 3 base nodes: master(+pgpool), special slave (+pgpool), usual slave (without pgpool). The usual slave will be used as a 'gold image' for cloning to additional slave instances. 
-The base nodes have a static IP primary addresses. Additional nodes can use dynamic IP. AWS Security Group for PG nodes need to open ports 22, 5432, 9999, 9898, 9000.  
+The goal is to create a PostgreSQL cluster with Fault-tolerant, Load Balancing using AWS Auto Scaling Group (ASG) of Spot EC2 instances. 2 of EC2 Spot instances (base nodes with pgpool installed) will not be located in ASG. Other nodes will be located inside the ASG. Base nodes are not located inside the ASG because these nodes must use static private IP address.
+The main idea is to use AWS Spot instances for base nodes and additional slave instances for select workload. In case of increased workload, ASG will add more slave nodes depending on CPU Usage parameter (by default 80%). The cluster consists of 2 base nodes: PG-master+pgpool, special PG-slave+pgpool. A regular slave(-s) will not have pgpool installed and they will not participate in failover operations. The image of regular slave will be used as a 'gold image' for cloning to additional slave instances.
+The base nodes will have a static IP primary addresses for node communication and VIP as secondary private IP for Pgpool. VIP will be used as entrypoint to Application tier. Additional nodes in ASG use dynamic private IP addresses. AWS Security Group for all PG nodes need to open ports 22, 5432, 9999, 9898, 9000. For deployment a base nodes there is need to use Ansible master node which has an access to PG nodes by ssh using keys.
 
-Requirements
+Software requirements
 ------------
-Ubuntu 16.04 LTS, Ansible 2.8.5, PostgreSQL 9.6, Repmgr 5.0.0, Pgpool 4.0.6
+Ubuntu 16.04 LTS, Ansible 2.8.5, PostgreSQL 9.6, Repmgr 5.0.0, Pgpool 4.0.6, AWS cli.
 
 Components and Concept.
 --------------
-1. Ansible. 
+1. Ansible master. 
 It will automatically deploy and manage PG cluster. 
 It is required to install Ansible software inside the private network. Ansible will connect to targets (PG nodes) via ssh. There is need to tune passwordless access between Ansible host and each of the PG host using RSA keys. Currently, access tuned between Ubuntu user of Ansible node and Ubuntu user of PG nodes. 
 2. PG nodes.
@@ -47,9 +47,14 @@ The final step is encrypt the file:
 $ sudo ansible-vault encrypt creds.yml   
 ```
 The secret variables will be decrypted temporary in memory during the playbook run. They are not shown in std output and logs.
-
-3. Start to deploy PG infrastructure:
-If Ansible host and database hosts are accesible to both end via common private network then need to change 'hosts' file on privatedatabase addresses. In case of database hosts and ansible host has passwordless access between Ubuntu users then option --key-fileno need to be specified. 
+3. Prepare AWS environment:
+3.1 add rules to Security Group 1 with open ports 22, 5432, 9999, 9898, 9000 for private network (for example 172.31.31.0/24 subnet) and open 22 port to public network.
+3.2 add ec2 instances - primary master and slave (base nodes). If they are already exist, then skip this step.
+3.3 assign ec2 instances to Security Group 1.
+3.4 for master node need to setup a static ip for eth0 network enterface in AWS console (Actions->Networking->Manage IP addresses, add the secondary private ip for VIP). One private and one public IP are already setup by AWS. The second private IP need to be added manually. 
+3.5 
+4. Start to deploy PG infrastructure:
+If Ansible host and database hosts are located in common private network then need to add to /etc/ansible/hosts file private addresses from both nodes. In case of the database hosts and ansible host has passwordless access between Ubuntu users then option --key-file no need to be specified. 
 ```
 [ubuntu@ans-host:/etc/ansible]$ ansible-playbook -i hosts playbook.yml --key-file="/home/ubuntu/javakey.pem" -v
 ```
@@ -60,32 +65,48 @@ Before starting you need to change the hosts file and check variables inside the
 ./roles/common/defaults/main.yml  
 
 ```
-4. After the deployment check the state of postgres, pgpool and repmgr services on base nodes.
-4.1 Postgresq (OK status)
+All tasks must be completed without errors. 
+5. After the deployment you need to check the state of postgres, pgpool and repmgr services on base nodes.
+5.1 Postgresq (OK status)
 ```
 ubuntu@ip-172-30-0-235:~$ systemctl status postgresql@9.6-main.service
 ● postgresql@9.6-main.service - PostgreSQL Cluster 9.6-main
    Loaded: loaded (/lib/systemd/system/postgresql@.service; disabled; vendor preset: enabled)
    Active: active (running) since Fri 2019-10-25 16:35:30 UTC; 1 day 22h ago
 ```
-4.2 Pgpool (OK status)
+5.2 Pgpool (OK status)
 ```
 ubuntu@ip-172-30-0-235:~$ systemctl status pgpool2.service 
 ● pgpool2.service - pgpool-II
    Loaded: loaded (/lib/systemd/system/pgpool2.service; enabled; vendor preset: enabled)
    Active: active (running) since Fri 2019-10-25 16:35:38 UTC; 1 day 22h ago
 ```
-4.3 Repmgrd (OK status)
+5.3 Repmgrd (OK status)
 ```
 ubuntu@ip-172-30-0-235:~$ systemctl status repmgrd
 ● repmgrd.service - LSB: Start/stop repmgrd
    Loaded: loaded (/etc/init.d/repmgrd; bad; vendor preset: enabled)
    Active: active (running) since Thu 2019-10-24 12:14:59 UTC; 3 days ago
 ```
-5. Check the cluster state.
+On PG master you can see 'wal sender' processes, on PG slave nodes 'wal receiver' processes accordingly. 
+Check the network access between PG  nodes using nmap, example below:
+ubuntu@ip-172-30-0-235:~$ nmap 172.30.0.12
 
-6. AWS network tuning    
-6.1 AWS steps to use floating IP. The floating IP configuration need to use in Pgpool cluster.  
+Starting Nmap 7.01 ( https://nmap.org ) at 2019-11-07 18:39 UTC
+Nmap scan report for ip-172-30-0-12 (172.30.0.12)
+Host is up (0.00049s latency).
+Not shown: 995 filtered ports
+PORT     STATE  SERVICE
+22/tcp   open   ssh
+80/tcp   open   http
+5432/tcp open   postgresql
+9898/tcp closed monkeycom
+9999/tcp closed abyss
+
+6. Check the cluster state.
+
+7. AWS specific network settings for Pgpool nodes.     
+7.1 AWS steps to use floating IP. The floating IP configuration need to use in Pgpool cluster.  
 Currently, AWS does not fully support floating IP for Ubuntu 16.04 LTS. This means, that setting a static primary and secondary ip  via Actins->Networking->Manage IP Addresses not working dynamically and even after the shutdown/startup. For correct network settings change on master database node network config files '/etc/network/interfaces' and 99-disable-network-config.cfg as shown in example at github. The first file will add primary and secondary ip addresses. The second file will disable cloud network configuration and use standard Ubuntu network configuration. To apply network changes need to run following command:
 ```
 $ sudo systemctl restart networking
@@ -94,7 +115,7 @@ $ ip --brief a s
 lo               UNKNOWN        127.0.0.1/8 ::1/128 
 eth0             UP             172.31.41.51/20 172.31.41.52/20 fe80::88b:c5ff:fe78:f372/64 
 ```
-6.2 Other steps need to be implemented according to note https://aws.amazon.com/ru/articles/leveraging-multiple-ip-addresses-for-virtual-ip-address-fail-over-in-6-simple-steps/ 
+7.2 Other steps need to be implemented according to note https://aws.amazon.com/ru/articles/leveraging-multiple-ip-addresses-for-virtual-ip-address-fail-over-in-6-simple-steps/ 
 Also I checked that secondary ip not installed correctly even after the launch wizard instance (create EC2 instance). 
 The cloud init network config file /etc/network/interfaces.d/50-cloud-init.cfg not contain required settings.
 Settings will return to original values after reboot even if they were set manually.
