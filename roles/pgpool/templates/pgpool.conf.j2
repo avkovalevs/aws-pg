@@ -11,7 +11,7 @@ pcp_socket_dir = '/tmp'
 
 # - Backend Connection Settings -
 {% for host in groups['db'] %}
-backend_hostname{{ loop.index0 }} = {{ host }}
+backend_hostname{{ loop.index0 }} = {{ ansible_hostname }}
 backend_port{{ loop.index0 }} = 5432
 backend_weight{{ loop.index0 }} = 1
 backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
@@ -54,7 +54,7 @@ client_idle_limit = 0
 
 # - Where to log -
 
-log_destination = 'syslog'
+log_destination = 'stderr'
 
 # - What to log -
 
@@ -115,7 +115,7 @@ black_function_list = 'currval,lastval,nextval,setval'
 # MASTER/SLAVE MODE
 #------------------------------------------------------------------------------
 
-master_slave_mode = on
+master_slave_mode = off
 master_slave_sub_mode = 'stream'
 
 # - Streaming -
@@ -182,7 +182,7 @@ client_idle_limit_in_recovery = 0
 
 # - Enabling -
 
-use_watchdog = on
+use_watchdog = off
 
 # -Connection to up stream servers -
 
@@ -224,7 +224,7 @@ wd_heartbeat_keepalive = 2
 wd_heartbeat_deadtime = 30
 
 {% for host in play_hosts %}
-heartbeat_destination{{ loop.index0 }} = '{{ host }}'
+heartbeat_destination{{ loop.index0 }} = '{{ ansible_hostname }}'
 heartbeat_destination_port{{ loop.index0 }} = 9694 
 heartbeat_device{{ loop.index0 }} = ''
 {% endfor %}

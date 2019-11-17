@@ -24,6 +24,8 @@
 [pgpnodes]
 172.31.33.42
 172.31.46.91
+
+
 # Ex 3: A collection of database servers in the 'dbservers' group
 
 ## [dbservers]

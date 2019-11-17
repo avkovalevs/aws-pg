@@ -368,11 +368,12 @@
       changed_when: false
       become: true
     
-    - name: "Check on recently cloned instance without running wal reciever processes"
-      shell: "ps -ef | grep receiver"
+    - name: "Check on recently cloned instance without running wal receiver processes"
+      shell: "ps -ef | grep '[r]eceiver'"
       register: receiver_result
       become: true
       become_user: "{{ pguser }}"
+      ignore_errors: true
 
     - name: "Debug receiver_register"
       debug:
@@ -390,7 +391,7 @@
         name: postgresql@9.6-main.service
       become: true
       become_user: root
-      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
 
     - name: "Clone master databases to replicas"
       command: >
@@ -403,7 +404,7 @@
         chdir: "{{ pgdata }}"
       become: true
       become_user: "{{ pguser }}" 
-      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
     
     - name: "Restart service postgres on replicas"
       systemd:
@@ -420,7 +421,7 @@
       register: register_result
       become: true
       become_user: "{{ pguser }}"
-      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
       ignore_errors: true
 
     - name: "Debug standby register"

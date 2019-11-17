@@ -89,7 +89,9 @@ ubuntu@ip-172-30-0-235:~$ systemctl status repmgrd
    Active: active (running) since Thu 2019-10-24 12:14:59 UTC; 3 days ago
 ```
 On PG master you can see 'wal sender' processes, on PG slave nodes 'wal receiver' processes accordingly. 
-Check the network access between PG  nodes using nmap, example below:
+The number of 'wal sender' processes is equal to number of slaves (or replicas).
+
+Check the network access between PG nodes using nmap, example below:
 ubuntu@ip-172-30-0-235:~$ nmap 172.30.0.12
 
 Starting Nmap 7.01 ( https://nmap.org ) at 2019-11-07 18:39 UTC
@@ -100,8 +102,8 @@ PORT     STATE  SERVICE
 22/tcp   open   ssh
 80/tcp   open   http
 5432/tcp open   postgresql
-9898/tcp closed monkeycom
-9999/tcp closed abyss
+9898/tcp open   monkeycom
+9999/tcp open   abyss
 
 6. Check the cluster state.
 
@@ -126,7 +128,7 @@ Useful links:
 https://www.pgpool.net/docs/latest/en/html/example-aws.html
 https://aws.amazon.com/ru/articles/leveraging-multiple-ip-addresses-for-virtual-ip-address-fail-over-in-6-simple-steps/
 https://aws.amazon.com/ru/premiumsupport/knowledge-center/ec2-virtual-ip-monitor-script-fails/
-
+https://habr.com/ru/post/213409/
 -------
 License
 -------
