@@ -2,19 +2,19 @@
 
 listen_addresses = '*'
 port = 9999
-socket_dir = '/tmp'
+socket_dir = '/var/run/postgresql'
 
 # - pgpool Communication Manager Connection Settings -
 
 pcp_port = 9898
-pcp_socket_dir = '/tmp'
+pcp_socket_dir = '/var/run/postgresql'
 
 # - Backend Connection Settings -
 {% for host in groups['db'] %}
 backend_hostname{{ loop.index0 }} = {{ ansible_hostname }}
 backend_port{{ loop.index0 }} = 5432
 backend_weight{{ loop.index0 }} = 1
-backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
+backend_flag{{ loop.index0 }} = 'DISALLOW_TO_FAILOVER'
 backend_data_directory{{ loop.index0 }} = '{{ pgdata }}'
 
 {% endfor %}
@@ -162,7 +162,7 @@ health_check_retry_delay = 2
 
 failover_command = '/etc/pgpool/failover.sh %d %H'
 failback_command = ''
-fail_over_on_backend_error = on
+failover_on_backend_error = off
 search_primary_node_timeout = 10
 
 #------------------------------------------------------------------------------

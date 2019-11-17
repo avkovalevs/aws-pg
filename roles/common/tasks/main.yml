@@ -58,6 +58,7 @@
     - strace
     - ca-certificates
     - ec2-api-tools
+    - awscli
   become: true
   become_user: root
 
