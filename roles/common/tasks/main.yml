@@ -62,6 +62,13 @@
   become: true
   become_user: root
 
+- sysctl:
+    name: net.core.somaxconn
+    value: '256'
+    state: present
+  become: true
+  become_user: root
+
   #- name: "Disable AWS Cloud network settings"
   #copy: 
   #  src: "{{ role_path }}/files/99-disable-network-config.cfg"

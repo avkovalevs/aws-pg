@@ -1,6 +1,7 @@
 #! /bin/sh
 
 ELASTIC_IP={{ vip_address }}
+echo $ELASTIC_IP
   # replace it with the Elastic IP address you
   # allocated from the aws console
 

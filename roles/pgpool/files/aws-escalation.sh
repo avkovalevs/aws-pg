@@ -1,11 +1,9 @@
 #! /bin/sh
 
 ELASTIC_IP={{ vip_address }}
-  # replace it with the Elastic IP address you
-  # allocated from the aws console
-  INSTANCE_ID={{ instance_id)
-  # replace it with the instance id of the Instance
-  # this script is installed on
+echo $ELASTIC_IP
+INSTANCE_ID=`/usr/bin/curl --silent http://169.254.169.254/latest/meta-data/instance-id`
+echo $INSTANCE_ID
 
 echo "Assigning Elastic IP $ELASTIC_IP to the instance $INSTANCE_ID"
 # bring up the Elastic IP

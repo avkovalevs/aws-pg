@@ -19,6 +19,7 @@
   gather_facts: true
   vars_files:
     - creds.yml
+    - awscreds.yml
   tasks:
     - name: Display PGPool hostnames 
       debug:

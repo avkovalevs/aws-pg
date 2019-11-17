@@ -19,6 +19,24 @@
   become: true
   become_user: root
 
+- name: "Copy aws-escalation.sh to /root folder"
+  copy:
+    src: "{{ role_path }}/files/aws-escalation.sh"
+    dest: "/root/aws-escalation.sh"
+    force: yes
+    mode: 0755
+  become: true
+  become_user: root
+
+- name: "Copy aws-de-escalation.sh to /root folder"
+  copy:
+    src: "{{ role_path }}/files/aws-de-escalation.sh"
+    dest: "/root/aws-de-escalation.sh"
+    force: yes
+    mode: 0755
+  become: true
+  become_user: root
+
 - name: "Create /opt/aws/bin catalog"  
   file:
     path: /opt/aws/bin
@@ -54,6 +72,36 @@
     src: /usr/bin/ec2-assign-private-ip-addresses
     dest: /opt/aws/bin/ec2-assign-private-ip-addresses
     state: link
+  become: true
+  become_user: root
+
+- name: "Create the AWS config directory"
+  file:
+    path: "{{ home }}/.aws"
+    state: directory
+    mode: 0755
+    owner: ubuntu
+    group: ubuntu
+  become: true
+  become_user: root
+ 
+- name: "Copy AWS CLI config"
+  template: 
+    src: aws_cli_config.j2
+    dest: "{{ home }}/.aws/config"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0600
+  become: true
+  become_user: root
+
+- name: "Copy AWS CLI credentials"
+  template: 
+    src: aws_cli_credentials.j2
+    dest: "{{ home }}/.aws/credentials"
+    owner: ubuntu
+    group: ubuntu
+    mode: 0600
   become: true
   become_user: root
 

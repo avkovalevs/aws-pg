@@ -7,4 +7,6 @@ pgdata: /var/lib/postgresql/9.6/main
 pghome: /var/lib/posgresql
 pgpuser: pgpooler
 aws_region: eu-west-1
-vip_address: 172.30.0.10
+aws_output_format: json
+vip_address: 34.253.86.163
+home: /home/ubuntu
