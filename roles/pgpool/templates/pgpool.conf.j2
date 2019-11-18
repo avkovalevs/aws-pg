@@ -10,15 +10,14 @@ pcp_port = 9898
 pcp_socket_dir = '/var/run/postgresql'
 
 # - Backend Connection Settings -
-{% for host in groups['db'] %}
-backend_hostname{{ loop.index0 }} = {{ ansible_hostname }}
+{% for member in groups['db'] %}
+backend_hostname{{ loop.index0 }} = '{{ hostvars[member]['ansible_default_ipv4']['address'] }}'
 backend_port{{ loop.index0 }} = 5432
 backend_weight{{ loop.index0 }} = 1
 backend_flag{{ loop.index0 }} = 'DISALLOW_TO_FAILOVER'
 backend_data_directory{{ loop.index0 }} = '{{ pgdata }}'
 
 {% endfor %}
-
 # - Authentication -
 
 enable_pool_hba = on
@@ -182,7 +181,7 @@ client_idle_limit_in_recovery = 0
 
 # - Enabling -
 
-use_watchdog = off
+use_watchdog = on
 
 # -Connection to up stream servers -
 
@@ -198,17 +197,17 @@ wd_authkey = ''
 # - Virtual IP control Setting -
 
 delegate_IP = ''
-ifconfig_path = '/sbin'
-if_up_cmd = 'ifconfig eth0:0 inet $_IP_$ netmask 255.255.255.0'
-if_down_cmd = 'ifconfig eth0:0 down'
+#ifconfig_path = '/sbin'
+#if_up_cmd = 'ifconfig eth0:0 inet $_IP_$ netmask 255.255.255.0'
+#if_down_cmd = 'ifconfig eth0:0 down'
 arping_path = '/usr/sbin'
 arping_cmd = 'arping -U $_IP_$ -w 1'
 
 # - Behaivor on escalation Setting -
 
 clear_memqcache_on_escalation = on
-wd_escalation_command = '{{ pghome }}/aws-escalation.sh'
-wd_de_escalation_command = '{{ pghome }}/aws-de-escalation.sh'
+wd_escalation_command = '/root/aws-escalation.sh'
+wd_de_escalation_command = '/root/aws-de-escalation.sh'
 
 # - Lifecheck Setting - 
 
@@ -223,10 +222,11 @@ wd_heartbeat_port = 9694
 wd_heartbeat_keepalive = 2
 wd_heartbeat_deadtime = 30
 
-{% for host in play_hosts %}
-heartbeat_destination{{ loop.index0 }} = '{{ ansible_hostname }}'
+{% for member in play_hosts if member == inventory_hostname %}
+heartbeat_destination{{ loop.index0 }} = '{{ hostvars[member]['ansible_default_ipv4']['address'] }}'
 heartbeat_destination_port{{ loop.index0 }} = 9694 
 heartbeat_device{{ loop.index0 }} = ''
+
 {% endfor %}
 
 # -- query mode --
@@ -239,10 +239,11 @@ wd_lifecheck_password = ''
 
 # - Other pgpool Connection Settings -
 
-{% for host in play_hosts %}
-other_pgpool_hostname{{ loop.index0 }} = '{{ host }}'
+{% for member in play_hosts if member != inventory_hostname %}
+other_pgpool_hostname{{ loop.index0 }} = '{{ hostvars[member]['ansible_default_ipv4']['address'] }}'
 other_pgpool_port{{ loop.index0 }} = 9999
 other_wd_port{{ loop.index0 }} = 9000
+
 {% endfor %}
 
 #------------------------------------------------------------------------------
