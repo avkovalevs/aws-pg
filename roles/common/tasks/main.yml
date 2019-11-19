@@ -69,6 +69,27 @@
   become: true
   become_user: root
 
+- sysctl:
+    name: net.ipv6.conf.all.disable_ipv6
+    value: '1'
+    state: present
+  become: true
+  become_user: root
+
+- sysctl:
+    name: net.ipv6.conf.default.disable_ipv6
+    value: '1'
+    state: present
+  become: true
+  become_user: root
+
+- sysctl:
+    name: net.ipv6.conf.lo.disable_ipv6
+    value: '1'
+    state: present
+  become: true
+  become_user: root
+
   #- name: "Disable AWS Cloud network settings"
   #copy: 
   #  src: "{{ role_path }}/files/99-disable-network-config.cfg"

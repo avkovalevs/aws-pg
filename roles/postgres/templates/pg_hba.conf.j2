@@ -1,9 +1,9 @@
 # {{ ansible_managed }}
 # default rules
-local   all           {{ pguser }}                          trust
-host    all           {{ pguser }}  127.0.0.1/32            trust
-host    all           {{ pguser }}  ::1/128                 trust
-local   all           all                                   peer
+local   all           {{ pguser }}      	                trust
+host    all           {{ pguser }}  	127.0.0.1/32            trust
+host    all           {{ pguser }}  	::1/128                 trust
+local   all           all                                       peer
 
 {% if pgsql_cluster %}
 {%   if pgsql_replication_provider == 'repmgr' %}
@@ -28,4 +28,4 @@ host    repmgr        repmgr            {{ ( ansible_default_ipv4.network + '/' 
 # fallback
 host    all           pgpooler          {{ ( ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask  ) | ipaddr('net')  }}        md5
 host    all           postgres          {{ ( ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask  ) | ipaddr('net')  }}        md5     
-host    all           all          {{ ( ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask  ) | ipaddr('net')  }}        md5     
+host    all           all          	{{ ( ansible_default_ipv4.network + '/' + ansible_default_ipv4.netmask  ) | ipaddr('net')  }}        md5     

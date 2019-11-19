@@ -2,6 +2,7 @@
 # defaults file for pgpool
 pguser: postgres
 pggroup: postgres
+pgpool_users: pgpooler
 pg_ver: 9.6
 pgdata: /var/lib/postgresql/9.6/main
 pghome: /var/lib/posgresql

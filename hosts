@@ -18,12 +18,12 @@
 # Ex 2: A collection of hosts belonging to the 'webservers' group
 
 [db]
-34.253.228.186 pgsql_cluster_master=true master_hostname=ip-172-30-0-235 secondary_ip=172.30.0.10
-54.154.185.218
+3.134.207.12 pgsql_cluster_master=true master_hostname=ip-172-31-32-166 secondary_ip=3.134.207.12
+18.191.243.145
 
 [pgpnodes]
-34.253.228.186
-54.154.185.218
+3.134.207.12
+18.191.243.145
 # Ex 3: A collection of database servers in the 'dbservers' group
 
 ## [dbservers]

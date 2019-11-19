@@ -4,7 +4,7 @@
   gather_facts: true
   vars_files:
     - creds.yml
-    - awscreds.yml
+      #- awscreds.yml
   tasks:
     - name: Display Postgresql hostnames 
       debug:
@@ -13,13 +13,13 @@
     - common
     - role: postgres
       vars:
-        master_hostname: ip-172-31-33-42
+        master_hostname: ip-172-31-32-166
 - name: "Tuning PGPool with watchdog"
   hosts: pgpnodes
   gather_facts: true
   vars_files:
     - creds.yml
-    - awscreds.yml
+      #  - awscreds.yml
   tasks:
     - name: Display PGPool hostnames 
       debug:
