@@ -12,9 +12,11 @@ Ubuntu 16.04 LTS, Ansible 2.8.5, PostgreSQL 9.6, Repmgr 5.0.0, Pgpool 4.0.6, AWS
 Components and Concept.
 --------------
 1. Ansible master. 
-It will automatically deploy and manage PG cluster. 
-It is required to install Ansible software inside the private network. Ansible will connect to targets (PG nodes) via ssh. There is need to tune passwordless access between Ansible host and each of the PG host using RSA keys. Currently, access tuned between Ubuntu user of Ansible node and Ubuntu user of PG nodes. 
+It will automatically deploy and manage PG cluster. It is anough to use t2.nano EC2 instance for Ansible. It is required to install Ansible software inside the private network on separate node and be avaliable all time. Ansible will connect to targets (PG nodes) via ssh. There is need to tune passwordless access between Ansible host and each of the PG host using RSA keys. Currently, access tuned between Ubuntu user of Ansible node and Ubuntu user of PG nodes. 
 2. PG nodes.
+There are 3 type of PG nodes: PG Master (M), PG Special Slave (SS) and Regular Slave (RS) located in Auto Scaling Group.
+The RS will not participate in failover and failback operations as SS. The SS contain a PGPool software, but RS not.
+The HA/DR solution for PostgreSQL is streaming replication which managed by REPMGR.  
 Playbooks will tune passwordless access between Postgres system's users of all PG nodes. It is a requirement of PostgreSQL streaming replication.  
 3. PGPool nodes.
 They are located on base PG nodes and communicate between Application Tier and Database Tier. The Application tier will connect to Virtual IP (Floating IP) one of the PGPool nodes - Master on 9999 port and it will balance worload between all PG nodes. In case of Master failure VIP address will move to Slave node and promote to a new Master. Both PGPool nodes will communicate each other using Watchdog healthcheck process.
@@ -25,10 +27,10 @@ Install Ansible software
 It is required to install Ansible software inside the private network which has an access using ssh to database nodes. This node must have an Internet access to install software from public repositories to target nodes. 
 ```
 $ sudo apt-add-repository ppa:ansible/ansible
-$ sudo apt install software-properties-common
+$ sudo apt install software-properties-common -y
 $ sudo apt update
-$ sudo apt install ansible
-$ sudo python-psycopg2 
+$ sudo apt install ansible -y
+$ sudo apt install python-psycopg2 -y
 ```
 How to use:
 ----------------
