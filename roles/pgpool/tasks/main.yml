@@ -248,6 +248,63 @@
   become: true
   become_user: root
 
+- name: "Check /var/log/pgpool2 existence"
+  stat:
+    path: /var/log/pgpool2
+  register: pool_parent_log_file_exists
+  become: true
+  become_user: root
+
+- name: "Create /var/log/pgpool2 directory if not exist"
+  file:
+    path: /var/log/pgpool2
+    state: directory
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  when: not pool_parent_log_file_exists.stat.exists
+  become: true
+  become_user: root
+
+- name: "Check pgpool.log existence"
+  stat:
+    path: /var/log/pgpool2/pgpool.log
+  register: pool_log_file_exists
+  become: true
+  become_user: root
+
+- name: "Create pgpool log file if not exist"
+  file:
+    path: /var/log/pgpool2/pgpool.log
+    state: touch
+    mode: 0777
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  when: not pool_log_file_exists.stat.exists
+  become: true
+  become_user: root
+
+- name: "Rotate pgpool log file using Rsyslog"
+  lineinfile:
+    path: /etc/rsyslog.conf
+    line: "LOCAL1.*    /var/log/pgpool2/pgpool.log"
+  become: true
+  become_user: root
+
+- name: "Add rotation configuration of pgpool log file"
+  lineinfile:
+    path: /etc/logrotate.d/rsyslog
+    insertafter: "/var/log/messages"
+    line: "/var/log/pgpool2/pgpool.log"
+  become: true
+  become_user: root
+
+- name: "Restart rsyslog"
+  service:
+    name: rsyslog
+    state: restarted
+  become: true
+  become_user: root
+  
 - name: "Restart pgpool2"
   systemd:
     name: pgpool2.service

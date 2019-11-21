@@ -3,11 +3,11 @@ PG Cluster tuning playbook
 
 The goal is to create a PostgreSQL cluster with Fault-tolerant, Load Balancing using AWS Auto Scaling Group (ASG) of Spot EC2 instances. 2 of EC2 Spot instances (base nodes with pgpool installed) will not be located in ASG. Other nodes will be located inside the ASG. Base nodes are not located inside the ASG because these nodes must use static private IP address.
 The main idea is to use AWS Spot instances for base nodes and additional slave instances for select workload. In case of increased workload, ASG will add more slave nodes depending on CPU Usage parameter (by default 80%). The cluster consists of 2 base nodes: PG-master+pgpool, special PG-slave+pgpool. A regular slave(-s) will not have pgpool installed and they will not participate in failover operations. The image of regular slave will be used as a 'gold image' for cloning to additional slave instances.
-The base nodes will have a static IP primary addresses for node communication and VIP as secondary private IP for Pgpool. VIP will be used as entrypoint to Application tier. Additional nodes in ASG use dynamic private IP addresses. AWS Security Group for all PG nodes need to open ports 22, 5432, 9999, 9898, 9000. For deployment a base nodes there is need to use Ansible master node which has an access to PG nodes by ssh using keys.
+The base nodes will have a static IP primary addresses for node communication and VIP as secondary private IP for Pgpool. VIP will be used as entrypoint to Application tier. Additional nodes in ASG use dynamic private IP addresses. AWS Security Group for all PG nodes need to open ports 22/tcp, 5432/tcp, 9999/tcp, 9898/tcp, 9000/tcp, 9694/udp. For deployment a base nodes there is need to use Ansible master node which has an access to PG nodes by ssh using keys.
 
 Software requirements
 ------------
-Ubuntu 16.04 LTS, Ansible 2.8.5, PostgreSQL 9.6, Repmgr 5.0.0, Pgpool 4.0.6, AWS cli.
+Ubuntu 16.04 LTS, Ansible 2.8.5, PostgreSQL 9.6.15, Repmgr 5.0.0, Pgpool 4.0.6, AWS cli 1.16.278.
 
 Components and Concept.
 --------------

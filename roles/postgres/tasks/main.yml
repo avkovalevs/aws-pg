@@ -259,6 +259,42 @@
   become: true
   become_user: root
 
+- name: "Check /var/log/repmgr existence"
+  stat:
+    path: /var/log/repmgr
+  register: repmgr_log_file_exists
+  become: true
+  become_user: root
+
+- name: "Create /var/log/repmgr directory if not exist"
+  file:
+    path: /var/log/repmgr
+    state: directory
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+    mode: 0755
+  when: not repmgr_log_file_exists.stat.exists
+  become: true
+  become_user: root
+
+- name: "Check repmgrd.log existence"
+  stat:
+    path: /var/log/repmgr/repmgrd.log
+  register: repmgrd_log_file_exists
+  become: true
+  become_user: root
+
+- name: "Create pgpool log file if not exist"
+  file:
+    path: /var/log/repmgr/repmgrd.log
+    state: touch
+    mode: 0777
+    owner: "{{ pguser }}"
+    group: "{{ pggroup }}"
+  when: not repmgrd_log_file_exists.stat.exists
+  become: true
+  become_user: root
+
 - block:
 # Actions inside this block will apply on master node only. If the master db during testing or failure moved to anothe node don't apply playbook.yml. Before applying this playbook you need to come back roles of the nodes to initial state.   
     - name: "Check if PostgreSQL database cluster is initialized"
@@ -369,7 +405,7 @@
       become: true
     
     - name: "Check on recently cloned instance without running wal receiver processes"
-      shell: "ps -ef | grep '[r]eceiver'"
+      shell: "ps -ef | grep 'wal receiver'"
       register: receiver_result
       become: true
       become_user: "{{ pguser }}"
@@ -421,7 +457,7 @@
       register: register_result
       become: true
       become_user: "{{ pguser }}"
-      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
+      # when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
       ignore_errors: true
 
     - name: "Debug standby register"
