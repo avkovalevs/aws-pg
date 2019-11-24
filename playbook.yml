@@ -1,25 +1,36 @@
 ---
+
+- name: "Tuning all nodes"
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Display all hostnames 
+      debug:
+        msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
+  roles:
+    - common
+
 - name: "Tuning PostgreSQL replication"
   hosts: db
   gather_facts: true
   vars_files:
     - creds.yml
-      #- awscreds.yml
+    - awscreds.yml
   tasks:
     - name: Display Postgresql hostnames 
       debug:
         msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
+
   roles:
-    - common
-    - role: postgres
-      vars:
-        master_hostname: ip-172-31-32-166
+  - role: postgres
+    vars:
+      master_hostname: ip-172-31-32-166
 - name: "Tuning PGPool with watchdog"
   hosts: pgpnodes
   gather_facts: true
   vars_files:
     - creds.yml
-      #  - awscreds.yml
+    - awscreds.yml
   tasks:
     - name: Display PGPool hostnames 
       debug:
