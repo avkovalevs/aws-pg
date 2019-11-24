@@ -355,7 +355,7 @@
   become: true
   become_user: root
 
-- name: "Create pgpool log file if not exist"
+- name: "Create repmgr log file if not exist"
   file:
     path: /var/log/repmgr/repmgrd.log
     state: touch
@@ -392,7 +392,7 @@
       run_once: yes
       become: true
       become_user: root
-
+   
     - name: "The copy postgresql.replication.conf"
       copy:
         src: "{{role_path}}/files/postgresql.replication.conf"

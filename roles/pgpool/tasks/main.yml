@@ -201,6 +201,16 @@
   become: true
   become_user: root
 
+- name: "Add pgpool2 role"
+  postgresql_user:
+    state: present
+    name: "{{ pgpool_users }}"
+    encrypted: yes
+    password: "{{ pgpoolerpass }}"
+    role_attr_flags: LOGIN
+  become: true
+  become_user: "{{ pguser }}"
+
 - name: "Generate md5 pass for pgpooler"
   command: "pg_md5 {{ pgpoolerpass }}"
   register: pgpuser_md5_password

@@ -31,6 +31,7 @@ $ sudo apt install software-properties-common -y
 $ sudo apt update
 $ sudo apt install ansible -y
 $ sudo apt install python-psycopg2 -y
+$ sudo apt install python-netaddr -y
 ```
 How to use:
 ----------------
