@@ -40,6 +40,8 @@ How to use:
 2. Add the Ansible-vault file .vault_pass.txt to ubuntu user's $HOME catalog (get it from #avkovalevs)
 This file is used as the key to decrypt the creds.yml.
 The creds.yml file store the passwords variables which are used inside the playbook.yml.
+Add this string below to end of file /home/ubuntu/.profile and run $ . ~/.profile
+ANSIBLE_VAULT_PASSWORD_FILE=/home/ubuntu/.vault_pass.txt 
 To change variables inside the creds.yml file use the following commands:
 ```
 $ sudo ansible-vault decrypt creds.yml
@@ -51,11 +53,11 @@ $ sudo ansible-vault encrypt creds.yml
 ```
 The secret variables will be decrypted temporary in memory during the playbook run. They are not shown in std output and logs.
 3. Prepare AWS environment:
-3.1 add rules to Security Group 1 with open ports 22, 5432, 9999, 9898, 9000 for private network (for example 172.31.31.0/24 subnet) and open 22 port to public network.
+3.1 add rules to Security Group 1 with open ports 22, 5432, 9999, 9898, 9000, 9694/udp for private network (for example 172.31.31.0/24 subnet) and open 22 port to public network.
 3.2 add ec2 instances - primary master and slave (base nodes). If they are already exist, then skip this step.
 3.3 assign ec2 instances to Security Group 1.
 3.4 for master node need to setup a static ip for eth0 network enterface in AWS console (Actions->Networking->Manage IP addresses, add the secondary private ip for VIP). One private and one public IP are already setup by AWS. The second private IP need to be added manually. 
-3.5 
+3.5 Assign Elastic IP to Master Node with reassignment option. 
 4. Start to deploy PG infrastructure:
 If Ansible host and database hosts are located in common private network then need to add to /etc/ansible/hosts file private addresses from both nodes. In case of the database hosts and ansible host has passwordless access between Ubuntu users then option --key-file no need to be specified. 
 ```
