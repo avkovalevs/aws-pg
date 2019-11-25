@@ -27,14 +27,5 @@
 172.31.33.42
 172.31.46.91
 
-
-# Ex 3: A collection of database servers in the 'dbservers' group
-
-## [dbservers]
-## 
-
-# Here's another example of host ranges, this time there are no
-# leading 0s:
-
-## db-[99:101]-node.example.com
+[asg]
 

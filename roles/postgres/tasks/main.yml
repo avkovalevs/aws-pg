@@ -466,7 +466,7 @@
   when: (not pgsql_cluster or pgsql_cluster_master)
 
 - block:
-    - name: "Check if data dir is empty on slave"
+    - name: "Check if pgdata dir is empty on slave then cloning from master"
       find:
         paths: "{{ pgdata }}"
         file_type: file
@@ -475,7 +475,7 @@
       changed_when: false
       become: true
     
-    - name: "Check on recently cloned instance without running wal receiver processes"
+    - name: "Check if wal receiver process exist then skip cloning"
       shell: "ps -ef | grep 'wal receiver'"
       register: receiver_result
       become: true
@@ -498,7 +498,7 @@
         name: postgresql@9.6-main.service
       become: true
       become_user: root
-      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
 
     - name: "Clone master databases to replicas"
       command: >

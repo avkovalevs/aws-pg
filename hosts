@@ -24,13 +24,4 @@
 [pgpnodes]
 3.134.207.12
 18.191.243.145
-# Ex 3: A collection of database servers in the 'dbservers' group
-
-## [dbservers]
-## 
-
-# Here's another example of host ranges, this time there are no
-# leading 0s:
-
-## db-[99:101]-node.example.com
 
