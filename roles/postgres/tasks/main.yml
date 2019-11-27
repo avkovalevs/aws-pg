@@ -511,7 +511,7 @@
         chdir: "{{ pgdata }}"
       become: true
       become_user: "{{ pguser }}" 
-      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 1)
+      when: ( data_dir_files.matched|int == 0 or receiver_result.stdout_lines|length < 2)
     
     - name: "Restart service postgres on replicas"
       systemd:

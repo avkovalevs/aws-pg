@@ -1,0 +1,19 @@
+[Unit]
+Description=Add/drop RS instance from repmgr cluster
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+User=ubuntu
+Type=simple
+ExecStart=/usr/local/bin/addinstance.sh 
+ExecStop=/usr/local/bin/dropinstance.sh
+TimeoutSec=30
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=350
+StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target

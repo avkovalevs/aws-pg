@@ -1,0 +1,32 @@
+---
+# tasks file for asgspot
+- name: "Copy script to add spotinst inside ASG"
+  copy:
+     src: "{{role_path}}/files/addinstance.sh"
+     dest: "/usr/local/bin/addinstance.sh"
+     mode: 0644
+     owner: ubuntu
+     group: ubuntu
+  become: true
+  become_user: root
+
+- name: "Copy script to drop spotinst inside ASG"
+  copy:
+     src: "{{role_path}}/files/dropinstance.sh"
+     dest: "/usr/local/bin/dropinstance.sh"
+     mode: 0644
+     owner: ubuntu
+     group: ubuntu
+  become: true
+  become_user: root
+
+- name: "Copy rsspot service to systemd"
+  copy:
+     src: "{{role_path}}/files/rsspot.service"
+     dest: "/lib/systemd/system/rsspot.service"
+     mode: 0644
+     owner: root
+     group: root
+  become: true
+  become_user: root
+...
