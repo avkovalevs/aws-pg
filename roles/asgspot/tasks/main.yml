@@ -20,6 +20,16 @@
   become: true
   become_user: root
 
+- name: "Copy script to add/delete backends to/from  /etc/pgpool/pgpool.conf"
+  copy:
+     src: "{{role_path}}/files/pgconfi.php"
+     dest: "/usr/local/bin/pgconfi.php"
+     mode: 0750
+     owner: root
+     group: root
+  become: true
+  become_user: root
+
 - name: "Copy rsspot service to systemd"
   copy:
      src: "{{role_path}}/files/rsspot.service"

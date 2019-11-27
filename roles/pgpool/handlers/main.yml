@@ -1,2 +1,13 @@
 ---
 # handlers file for pgpool
+
+- name: "restart pgpool2"
+  systemd:
+    name: pgpool2.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: true
+  become_user: root
+
+...

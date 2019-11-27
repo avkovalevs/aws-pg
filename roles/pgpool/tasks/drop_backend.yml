@@ -1,0 +1,12 @@
+---
+# Drop backends from pgpool.conf and restart pgpool both nodes 
+- name: "Delete backends from /etc/pgpool/pgpool.conf"
+  command: /usr/local/bin/pgconfi.php pgpool.conf remove "{{ private_backend_ip }}"
+    args:
+      chdir: /etc/pgpool
+  become: true
+  become_user: root
+  ignore_errors: true
+  notify: restart pgpool2
+
+...
