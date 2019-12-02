@@ -58,6 +58,7 @@
     - wget
     - nmon
     - strace
+    - php7.0
     - ca-certificates
     - ec2-api-tools
     - awscli
@@ -506,7 +507,7 @@
         -h {{ master_hostname }} -p 5432
         -U repmgr -d repmgr -D {{ pgdata }}
         --copy-external-config-files=samepath --verbose
-        standby clone --force
+        standby clone --upstream-node-id=1 --force
       args:
         chdir: "{{ pgdata }}"
       become: true
@@ -522,7 +523,11 @@
       become_user: root
 
     - name: "Register the replicas"
-      command: "/usr/bin/repmgr -f /etc/repmgr.conf standby register -F"
+      command: >
+        /usr/bin/repmgr --cluster 9.6/main -f /etc/repmgr.conf
+        -h {{ master_hostname }} -p 5432
+        -U repmgr -d repmgr -D {{ pgdata }}
+        standby register --upstream-node-id=1 --force
       args:
         chdir: "{{ pgdata }}"
       register: register_result
