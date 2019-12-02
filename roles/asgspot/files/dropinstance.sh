@@ -9,7 +9,7 @@ echo $private_ip
 if [[ $(grep -n "$private_ip" /etc/ansible/hosts | wc -l) > 0 ]]; then
   sed -i "/$private_ip/d" /etc/ansible/hosts
   cd /etc/ansible
-  /usr/bin/ansible-playbook -i hosts playbook.yml --extra-vars "private_backend_ip=$private_ip" -v 
+  /usr/bin/ansible-playbook -i hosts drop_backend.yml --extra-vars "private_backend_ip=$private_ip" -v 
 else
   echo "$private_ip doesn't exist in hosts file"
 fi

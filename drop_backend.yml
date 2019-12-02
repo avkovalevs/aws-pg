@@ -1,0 +1,28 @@
+---
+# Drop backends from pgpool.conf and restart pgpool both nodes 
+- name: "Drop backend from pgpool configs"
+  hosts: pgpnodes
+  gather_facts: true
+  tasks:
+    - name: Display PGPool hostnames 
+      debug:
+        msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
+
+    - name: "Delete backends from /etc/pgpool/pgpool.conf"
+      command: /usr/local/bin/pgconfi.php pgpool.conf remove "{{ private_backend_ip }}"
+        args:
+          chdir: /etc/pgpool
+      become: true
+      become_user: root
+      ignore_errors: true
+
+    - name: "Restart pgpool2"
+      systemd:
+        name: pgpool2.service
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      become: true
+      become_user: root
+
+...
