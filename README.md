@@ -128,6 +128,16 @@ The cloud init network config file /etc/network/interfaces.d/50-cloud-init.cfg n
 Settings will return to original values after reboot even if they were set manually.
 
 
+Useful commands for clones which was created by spotinst cloning process when db stale on 10 minutes:
+0. stop postgres clone (postgres user)
+sudo pg_ctlcluster 9.6 main stop  
+1. rejoin+pg_rewind (starts from clone ip:ip-172-31-35-105, master_node=ip-172-31-32-166, postgres user)
+repmgr --cluster 9.6/main  -f /etc/repmgr.conf -d 'host=ip-172-31-32-166 dbname=repmgr user=repmgr connect_timeout=10 fallback_application_name=ip-172-31-35-105' node rejoin  --force-rewind -F -v
+2. register stopped clone instance (postgres user)
+repmgr --cluster 9.6/main -f /etc/repmgr.conf -h ip-172-31-32-166 -p 5432 -U repmgr -d repmgr -D /var/lib/postgresql/9.6/main standby register --upstream-node-id=1 -F
+3. generate recovery.conf file (postgres user)
+repmgr --cluster 9.6/main -f /etc/repmgr.conf -h 172.31.32.166 -p 5432 -U repmgr -d repmgr -D /var/lib/postgresql/9.6/main standby clone --recovery-conf-only --upstream-node-id=1 -v
+
 Useful links: 
 --------
 https://www.pgpool.net/docs/latest/en/html/example-aws.html
