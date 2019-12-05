@@ -1,5 +1,5 @@
 ---
-- name: "Stop PostgreSQL instances"
+- name: "Start PostgreSQL instances"
   hosts: db
   gather_facts: true
   vars_files:
@@ -9,10 +9,17 @@
       debug:
         msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
    
-    - name: "Stop PosgreSQL instances"    
+    - name: "Start PostgreSQL service"    
       systemd:
-        state: started
         name: postgresql@9.6-main.service
+        state: started
+      become: true
+      become_user: root
+    
+    - name: "Start repmgrd service"    
+      systemd:
+        name: repmgrd.service
+        state: started
       become: true
       become_user: root
 

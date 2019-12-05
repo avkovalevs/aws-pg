@@ -1,6 +1,8 @@
 ---
 # tasks file for asgspot
-- name: "Copy script to add spotinst inside ASG"
+# You must be sure at least one spotinst in ASG exist
+#
+- name: "Copy script to add spotinst to ASG"
   copy:
      src: "{{role_path}}/files/addinstance.sh"
      dest: "/usr/local/bin/addinstance.sh"
@@ -10,7 +12,7 @@
   become: true
   become_user: root
 
-- name: "Copy script to drop spotinst inside ASG"
+- name: "Copy script to drop out spotinst from ASG"
   copy:
      src: "{{role_path}}/files/dropinstance.sh"
      dest: "/usr/local/bin/dropinstance.sh"
@@ -20,7 +22,7 @@
   become: true
   become_user: root
 
-- name: "Copy script to add/delete backends to/from  /etc/pgpool/pgpool.conf"
+- name: "Copy script to add/del backends to/from  /etc/pgpool/pgpool.conf"
   copy:
      src: "{{role_path}}/files/pgconfi.php"
      dest: "/usr/local/bin/pgconfi.php"
@@ -37,6 +39,13 @@
      mode: 0644
      owner: root
      group: root
+  become: true
+  become_user: root
+
+- name: "Enable rsspot service on reboot"    
+  systemd:
+    name: rsspot.service
+    state: enabled
   become: true
   become_user: root
 ...

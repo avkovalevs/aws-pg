@@ -9,12 +9,18 @@
       debug:
         msg: "The hostname is {{ ansible_hostname }} and the OS is {{ ansible_os_family }}"
    
-    - name: "Stop PosgreSQL instances"    
+    - name: "Stop PosgreSQL service"    
       systemd:
-        state: stopped
         name: postgresql@9.6-main.service
+        state: stopped
       become: true
       become_user: root
 
+    - name: "Stop repmgrd service"
+      systemd:
+        name: repmgrd.service
+        state: stopped
+      become: true
+      become_user: root
 ...
 

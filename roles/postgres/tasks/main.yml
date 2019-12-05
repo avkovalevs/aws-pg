@@ -566,11 +566,11 @@
   become: true
   become_user: root
 
-- name: "Make sure /var/log/repmgr directory for Postgres user exists"
+- name: "Grants on /var/log/repmgr directory for Postgres user"
   file:
     path: "/var/log/repmgr"
     state: directory
-    mode: 0775
+    mode: 0755
     owner: "{{ pguser }}"
     group: "{{ pggroup }}"
   become: true
