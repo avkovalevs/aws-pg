@@ -1,5 +1,6 @@
 ---
-# Drop backends from pgpool.conf and restart pgpool both nodes 
+# This playbook will drop backends from pgpool.conf and restart pgpool service both nodes. 
+# The private_backend_ip will transfer via dropinstance.sh file. 
 - name: "Drop backend from pgpool configs"
   hosts: pgpnodes
   gather_facts: true
@@ -24,5 +25,4 @@
         daemon_reload: yes
       become: true
       become_user: root
-
 ...

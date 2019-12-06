@@ -2,10 +2,10 @@
 
 ### Don't start this script on ansible, PG master and PG special slave
 ### This script must be started only on the regular slaves at AWS Auto Scaling Group 
-### All actions will be logged to file /home/ubuntu/log.out
+### All actions will be logged to file /home/ubuntu/addlog.out
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>/home/ubuntu/log.out 2>&1
+exec 1>/home/ubuntu/addlog.out 2>&1
 
 ###Get private  ip
 private_ip=$(/usr/bin/curl http://169.254.169.254/latest/meta-data/local-ipv4)

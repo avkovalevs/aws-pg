@@ -6,7 +6,8 @@ After=network-online.target
 
 [Service]
 User=ubuntu
-Type=simple
+Type=oneshot
+RemainAfterExit=yes
 ExecStart=/usr/local/bin/addinstance.sh 
 ExecStop=/usr/local/bin/dropinstance.sh
 TimeoutSec=30
