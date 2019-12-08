@@ -11,8 +11,8 @@
 
     - name: "Delete backends from /etc/pgpool/pgpool.conf"
       command: /usr/local/bin/pgconfi.php pgpool.conf remove "{{ private_backend_ip }}"
-        args:
-          chdir: /etc/pgpool
+      args:
+        chdir: /etc/pgpool2
       become: true
       become_user: root
       ignore_errors: true
