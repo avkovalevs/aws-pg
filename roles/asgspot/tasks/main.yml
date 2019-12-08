@@ -45,7 +45,9 @@
 - name: "Enable rsspot service on reboot"    
   systemd:
     name: rsspot.service
-    state: enabled
+    state: started
+    enabled: yes
+    daemon_reload: yes
   become: true
   become_user: root
 ...
