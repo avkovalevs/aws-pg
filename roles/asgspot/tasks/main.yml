@@ -6,21 +6,23 @@
   copy:
      src: "{{role_path}}/files/addinstance.sh"
      dest: "/usr/local/bin/addinstance.sh"
-     mode: 0644
+     mode: 0755
      owner: ubuntu
      group: ubuntu
   become: true
   become_user: root
+  tags: asg
 
 - name: "Copy script to drop out spotinst from ASG"
   copy:
      src: "{{role_path}}/files/dropinstance.sh"
      dest: "/usr/local/bin/dropinstance.sh"
-     mode: 0644
+     mode: 0755
      owner: ubuntu
      group: ubuntu
   become: true
   become_user: root
+  tags: asg
 
 - name: "Copy script to add/del backends to/from  /etc/pgpool/pgpool.conf"
   copy:
@@ -31,6 +33,7 @@
      group: root
   become: true
   become_user: root
+  tags: asg
 
 - name: "Copy rsspot service to systemd"
   copy:
@@ -41,6 +44,7 @@
      group: root
   become: true
   become_user: root
+  tags: asg
 
 - name: "Enable rsspot service on reboot"    
   systemd:
@@ -50,4 +54,87 @@
     daemon_reload: yes
   become: true
   become_user: root
+  tags: asg
+
+- name: "Change repmgr.conf"
+  lineinfile:
+    dest: "/etc/repmgr.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+    state: present
+  with_items:
+    - { regexp: '^node_name=', line: "node_name='{{ ansible_hostname }}'" }
+    - { regexp: '^node_id=', line: "node_id={{groups['asg'].index(inventory_hostname)+3 }}" }
+    - { regexp: '^priority=', line: "priority={{ 98-groups['asg'].index(inventory_hostname) }}" }
+    - { regexp: '(.*)host.*=.*(user=.*)', line: '\1host={{ ansible_hostname }} \2' }
+  become: true
+  become_user: root
+  tags: asg
+
+- name: "Check if wal receiver process exist then skip cloning"
+  shell: "ps -ef | grep 'wal receiver'"
+  register: receiver_result
+  become: true
+  become_user: "{{ pguser }}"
+  ignore_errors: true
+  tags: asg
+
+- name: "Debug receiver_register"
+  debug:
+    var: receiver_result.stdout_lines|length
+
+- name: "Check if pgdata dir contain recovery.conf"
+  find:
+    paths: "{{ pgdata }}"
+    file_type: file
+    patterns: "recovery.conf"
+  register: recovery_file
+  changed_when: false
+  become: true
+  tags: asg
+
+- name: "Debug recovery_file"
+  debug:
+    var: recovery_file.matched|int
+  
+- name: "Stop PG replica before rejoining if replica exist and outdated"
+  systemd:
+    name: postgresql@9.6-main.service
+    state: stopped
+    daemon_reload: yes
+  become: true
+  become_user: root
+  when: ( recovery_file.matched|int == 0 or receiver_result.stdout_lines|length < 2)
+  tags: asg
+
+- name: "Rejoin replica to cluster after snapshot cloning"
+  command: >
+    /usr/bin/repmgr --cluster 9.6/main node rejoin -f /etc/repmgr.conf
+    -d ' host={{ master_hostname }} dbname=repmgr user=repmgr connect_timeout=10 fallback_application_name={{ ansible_hostname }}'
+    --force-rewind -F -v
+  args:
+    chdir: "{{ pgdata }}"
+  become: true
+  become_user: "{{ pguser }}"
+  when: ( recovery_file.matched|int == 0 or receiver_result.stdout_lines|length < 2)
+  tags: asg
+
+- name: "Start service postgres on RS instance"
+  systemd:
+    name: postgresql@9.6-main.service
+    state: started
+    daemon_reload: yes
+  become: true
+  become_user: root
+  tags: asg
+
+- name: "Start service repmgrd"
+  systemd:
+    name: repmgrd.service
+    state: started
+  become: true
+  become_user: root
+  tags: asg
+  
 ...

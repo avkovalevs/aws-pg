@@ -1,2 +1,8 @@
 ---
 # defaults file for asgspot
+pghome: /var/lib/postgresql
+pgdata: /var/lib/postgresql/9.6/main
+pgbin: /usr/lib/postgresql/9.6/bin
+pgconf: /etc/postgresql/9.6/main
+pguser: postgres
+pggroup: postgres
